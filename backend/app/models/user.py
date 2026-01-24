@@ -80,6 +80,7 @@ class User(Base, TimestampMixin):
         "last_login_at",
         DateTime(timezone=True),
         nullable=True,
+        server_default=func.now(),
         comment="Last login timestamp"
     )
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict, model_validator
 from uuid import UUID
 from datetime import datetime
 
@@ -34,8 +34,15 @@ class UserRegister(BaseModel):
     
 class UserLogin(BaseModel):
     """User login request"""
-    email: EmailStr = Field(..., description="User's email")
+    email: EmailStr | None = Field(default=None, description="User's email")
+    username: str | None = Field(default=None, description="User's username")
     password: str = Field(...)
+
+    @model_validator(mode="after")
+    def check_at_least_one_login_field(self):
+        if not self.email and not self.username:
+            raise ValueError("Need to enter either email or username to login")
+        return self
 
     model_config = ConfigDict(
         json_schema_extra={

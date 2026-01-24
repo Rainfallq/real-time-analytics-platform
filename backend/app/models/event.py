@@ -1,7 +1,8 @@
 from sqlalchemy import Column, String, Boolean, Float, DateTime, Index
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid
-from datetime import datetime 
+from datetime import datetime
+from sqlalchemy.sql import func
 
 
 from app.db.base import TimestampMixin, Base
@@ -37,7 +38,7 @@ class Event(Base, TimestampMixin):
     event_time = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,
+        server_default=func.now(),
         index=True,
         comment="Event actual occur time"
     )
@@ -55,7 +56,7 @@ class Event(Base, TimestampMixin):
         comment="Event data(flexible json)"
     )
 
-    metadata = Column(
+    event_metadata = Column(
         JSONB,
         nullable=True,
         default={},

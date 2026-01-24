@@ -25,7 +25,7 @@ class Settings(BaseSettings):
         description="Secret key for JWT token generation"
     )
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTUES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # DB

@@ -69,12 +69,7 @@ async def startup_event():
     logger.info("🚀 Starting Real-Time Analytics Platform...")
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     logger.info(f"Debug mode: {settings.DEBUG}")
-
-    if settings.DEBUG:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info("✅ Database tables created")
-
+    
     logger.info("✅ Application started successfuly")
 
 @app.on_event("shutdown")

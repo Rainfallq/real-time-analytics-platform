@@ -68,12 +68,13 @@ async def login(
     credentials: UserLogin, 
     db: AsyncSession = Depends(get_db)
 ):
-    query = select(User).where(
-        or_(
-            User.email == credentials.email,
-            User.username == credentials.username
-            )
-    )
+    filters = []
+    if credentials.email: 
+        filters.append(User.email == credentials.email)
+    if credentials.username:
+        filters.append(User.username == credentials.username)
+
+    query = select(User).where(or_(*filters))
     result = await db.execute(query)
     user = result.scalar_one_or_none()
 
@@ -84,7 +85,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    if not user.is_active():
+    if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive"
@@ -155,7 +156,7 @@ async def refresh_token(
     result = await db.execute(
         select(User).where(User.id == user_id)
     )
-    user = result.scalar_one_or_none
+    user = result.scalar_one_or_none()
 
     if user is None or not user.is_active:
         raise HTTPException(
