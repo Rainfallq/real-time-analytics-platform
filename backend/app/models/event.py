@@ -80,7 +80,7 @@ class Event(Base, TimestampMixin):
         Index("ix-events-type-time", 'event_type', 'event_time'),
         Index('ix-events-source-time', 'source_id', 'event_time'),
         Index('ix-events-severity', 'severity', postgresql_where=(Column('severity') > 0.7)),
-        # JSONB index for fast queries on payload
+        # JSONB index using gin for fast queries on payload
         Index('ix-events-payload-gin', 'payload', postgresql_using='gin') 
     )
 
