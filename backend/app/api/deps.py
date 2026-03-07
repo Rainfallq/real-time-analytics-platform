@@ -36,7 +36,7 @@ async def get_current_user(
     # Decode token
     payload = decode_token(token)
     if payload is None:
-        return credentials_exception
+        raise credentials_exception
 
     # Validate token type
     token_type: str = payload.get("type")
@@ -50,22 +50,22 @@ async def get_current_user(
     # Extract user_id
     user_id_str: str = payload.get("sub")
     if user_id_str is None:
-        return credentials_exception
+        raise credentials_exception
     
     try: 
         from uuid import UUID
         user_id = UUID(user_id_str)
     except ValueError:
-        return credentials_exception
+        raise credentials_exception
     
     # Get user from database
-    result = await db.excecute(
+    result = await db.execute(
         select(User).where(User.id == user_id)
     )
     user = result.scalar_one_or_none()
 
     if user is None:
-        return credentials_exception
+        raise credentials_exception
     
     return user
 

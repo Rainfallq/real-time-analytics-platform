@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Real Time Analytics Platform",
-    vesrion=settings.APP_VERSION,
+    version=settings.APP_VERSION,
     description="High-Performance Real-Time Analytics Platform",
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,

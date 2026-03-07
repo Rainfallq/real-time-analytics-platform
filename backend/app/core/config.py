@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v):
         if isinstance(v, str):
-            return [i.stript() for i in v.split(",")]
+            return [i.strip() for i in v.split(",")]
         return v
     
     # Rate limiting

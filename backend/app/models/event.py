@@ -46,7 +46,7 @@ class Event(Base, TimestampMixin):
     ingested_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default="now()",
+        server_default=func.now(),
         comment="When event was ingested into the system"
     )
 
@@ -74,10 +74,10 @@ class Event(Base, TimestampMixin):
         Float,
         nullable=True,
         comment="Anomaly score 0.0-1.0"
-    )
+    )   
 
     __table_args__= (
-        Index("ix-events-type-time", 'event_type', 'event_time'),
+        Index('ix-events-type-time', 'event_type', 'event_time'),
         Index('ix-events-source-time', 'source_id', 'event_time'),
         Index('ix-events-severity', 'severity', postgresql_where=(Column('severity') > 0.7)),
         # JSONB index using gin for fast queries on payload
