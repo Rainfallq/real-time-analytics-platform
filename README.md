@@ -189,4 +189,4 @@ open http://localhost:8000/docs
 
 ---
 
-**Tech Stack**: Python, FastAPI, PostgreSQL, TimescaleDB, Docker, SQLAlchemy, Pydantic, JWT, Alembic
+**Tech Stack**: Python, FastAPI, PostgreSQL, TimescaleDB, Docker, SQLAlchemy, Pydantic, Alembic
