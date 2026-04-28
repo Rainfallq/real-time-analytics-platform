@@ -97,7 +97,7 @@ class TransactionService:
                 continue
 
             transaction = Transaction(
-                **txn_data.model_dump(), exclude={"fraud_score"},
+                **txn_data.model_dump(exclude={"fraud_score"}),
                 status="pending",
             )
             fraud_score = await self._calculate_fraud_score(txn_data, transaction)
@@ -126,22 +126,6 @@ class TransactionService:
         }
     
 
-    async def get_transaction(self, transaction_id: str) -> Transaction:
-        """Get transaction by external transaction id"""
-        result = await self.db.execute(select(Transaction).where(
-            Transaction.transaction_id == transaction_id
-            )
-        )
-        transaction = result.scalar_one_or_none()
-
-        if transaction is None: 
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Transaction: {transaction_id} not found",
-            )
-        return transaction
-    
-    
     async def list_transactions(
         self, 
         *,
@@ -272,6 +256,22 @@ class TransactionService:
         }
 
 
+    async def get_transaction(self, transaction_id: str) -> Transaction:
+        """Get transaction by external transaction id"""
+        result = await self.db.execute(select(Transaction).where(
+            Transaction.transaction_id == transaction_id
+            )
+        )
+        transaction = result.scalar_one_or_none()
+
+        if transaction is None: 
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Transaction: {transaction_id} not found",
+            )
+        return transaction
+    
+
     # Fraud scoring helpers
     async def _calculate_fraud_score(
         self, 
@@ -304,7 +304,7 @@ class TransactionService:
             score += 0.2
 
         # Rule 3: Customer transaction count
-        recent_count = self.get_customer_transaction_count(txn_data.customer_id, minutes=60) 
+        recent_count = await self.get_customer_transaction_count(txn_data.customer_id, minutes=60) 
         if recent_count >= 5:
             score += 0.3
 
@@ -350,7 +350,7 @@ class TransactionService:
         if 2 <= txn_hour < 5:
             reasons.append("unusual_hour")
         
-        return " ,".join(reasons) if reasons else "rule_threshold"
+        return ", ".join(reasons) if reasons else "rule_threshold"
 
 
     async def get_customer_transaction_count(

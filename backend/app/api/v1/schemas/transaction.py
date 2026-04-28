@@ -92,7 +92,7 @@ class TransactionResponse(BaseModel):
     country_code: str | None = Field(default=None)
     city: str | None = Field(default=None)
     
-    metadata: Dict[str, Any]
+    transaction_metadata: Dict[str, Any]
     processing_time_ms: float | None = Field(default=None)
     
     created_at: datetime
