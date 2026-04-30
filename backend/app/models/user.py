@@ -1,5 +1,7 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum, Index, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Boolean, DateTime, Index
+from sqlalchemy import func
+from sqlalchemy import Uuid, JSON
+from sqlalchemy.dialects.postgresql import JSONB
 import uuid
 import enum
 
@@ -20,7 +22,7 @@ class User(Base, TimestampMixin):
     __tablename__ = "users"
 
     id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
         index=True,
@@ -56,9 +58,9 @@ class User(Base, TimestampMixin):
     )
 
     role = Column(
-        SQLEnum(UserRole, name="user_role"),
+        String(20),
         nullable=False,
-        default=UserRole.USER,
+        default=UserRole.USER.value,
         comment="User role for permissions"
     )
 

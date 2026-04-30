@@ -1,7 +1,8 @@
 from app.db.base import Base, TimestampMixin
 from sqlalchemy import Column, String, Numeric, DateTime, Boolean, Float, Integer, Index, text
 import uuid
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Uuid, JSON
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from decimal import Decimal
 
@@ -22,7 +23,7 @@ class Transaction(Base, TimestampMixin):
     __tablename__ = "transactions"
 
     id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
         index=True,
@@ -58,7 +59,7 @@ class Transaction(Base, TimestampMixin):
     )
 
     merchant_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         nullable=True,
         index=True,
         comment="Merchant UUID"
@@ -71,7 +72,7 @@ class Transaction(Base, TimestampMixin):
     )
     
     customer_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         nullable=False,
         index=True,
         comment="Customer UUID"

@@ -11,7 +11,7 @@ class TransactionCreate(BaseModel):
     """Schema for creating a new transaction"""
     transaction_id: str = Field(..., min_length=1, max_length=255)
     amount: Decimal = Field(..., max_digits=15, decimal_places=2, gt=0)
-    currency: str = Field(..., default="USD", min_length=3, max_length=3)
+    currency: str = Field(default="USD", min_length=3, max_length=3)
     transaction_type: str = Field(...)
 
     merchant_id: UUID | None = Field(default=None)

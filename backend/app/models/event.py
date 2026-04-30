@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Boolean, Float, DateTime, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Uuid, JSON
+from sqlalchemy.dialects.postgresql import JSONB
 import uuid
-from datetime import datetime
 from sqlalchemy.sql import func
 
 
@@ -14,7 +14,7 @@ class Event(Base, TimestampMixin):
     __tablename__ = "events"
 
     id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
         index=True,
@@ -29,7 +29,7 @@ class Event(Base, TimestampMixin):
     )
 
     source_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         nullable=False,
         index=True,
         comment="Data Source id"

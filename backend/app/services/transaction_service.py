@@ -69,6 +69,7 @@ class TransactionService:
         # 5. Record processing time
         transaction.processing_time_ms = (time.perf_counter() - start) * 1000
         await self.db.commit()
+        await self.db.refresh(transaction)
 
         logger.info(
             "Transaction ingested: id=%s amount=%s fraud_score=%.2f",
@@ -242,7 +243,7 @@ class TransactionService:
         return {
             "time_range_hours": hours,
             "total_transactions": total_count,
-            "transaction_per_hour": round(total_count / hours, 2) if hours else 0.0,
+            "transactions_per_hour": round(total_count / hours, 2) if hours else 0.0,
             "total_amount": total_amount,
             "transactions_by_type": by_type,
             "transactions_by_status": by_status,
