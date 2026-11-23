@@ -1,0 +1,151 @@
+{
+    "root_group": {
+        "groups": {},
+        "checks": {
+            "status is 202": {
+                "name": "status is 202",
+                "path": "::status is 202",
+                "id": "34a6d451b2be8259be22b1a5c2a715cf",
+                "passes": 1500,
+                "fails": 0
+            },
+            "response contains transaction_id": {
+                "fails": 0,
+                "name": "response contains transaction_id",
+                "path": "::response contains transaction_id",
+                "id": "9aef29c285f0c55de2d4ac84c39cb00b",
+                "passes": 1500
+            }
+        },
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "metrics": {
+        "data_received": {
+            "count": 1181527,
+            "rate": 39382.44340128075
+        },
+        "app_processing_time_ms": {
+            "med": 2.0963500001016655,
+            "max": 44.37770000004093,
+            "p(90)": 3.630989999510351,
+            "p(95)": 5.8127849985794455,
+            "avg": 2.8118415999997524,
+            "min": 1.5816000013728626
+        },
+        "http_req_blocked": {
+            "avg": 0.013042466666666667,
+            "min": 0,
+            "med": 0,
+            "max": 6.8909,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_tls_handshaking": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0
+        },
+        "checks": {
+            "fails": 0,
+            "passes": 3000,
+            "value": 1
+        },
+        "iterations": {
+            "count": 1500,
+            "rate": 49.99772760328043
+        },
+        "http_reqs": {
+            "count": 1500,
+            "rate": 49.99772760328043
+        },
+        "http_req_duration": {
+            "p(90)": 17.001270000000012,
+            "p(95)": 51.267779999999874,
+            "avg": 19.339985600000034,
+            "min": 0.5293,
+            "med": 9.714649999999999,
+            "max": 458.1712
+        },
+        "vus": {
+            "value": 1,
+            "min": 0,
+            "max": 10
+        },
+        "data_sent": {
+            "count": 882623,
+            "rate": 29419.429553593454
+        },
+        "iteration_duration": {
+            "p(90)": 17.15467,
+            "p(95)": 52.248839999999895,
+            "avg": 19.48114300000002,
+            "min": 0.5293,
+            "med": 9.9563,
+            "max": 458.9251
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 19.339985600000034,
+            "min": 0.5293,
+            "med": 9.714649999999999,
+            "max": 458.1712,
+            "p(90)": 17.001270000000012,
+            "p(95)": 51.267779999999874
+        },
+        "transaction_success_rate": {
+            "passes": 1500,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_waiting": {
+            "med": 9.57665,
+            "max": 457.3173,
+            "p(90)": 16.245990000000006,
+            "p(95)": 51.150429999999986,
+            "avg": 18.89421259999999,
+            "min": 0.5293
+        },
+        "http_req_receiving": {
+            "p(95)": 1.5211549999999998,
+            "avg": 0.4413089333333331,
+            "min": 0,
+            "med": 0,
+            "max": 9.1533,
+            "p(90)": 0.9802300000000002
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 1500,
+            "value": 0
+        },
+        "http_req_sending": {
+            "p(95)": 0,
+            "avg": 0.004464066666666666,
+            "min": 0,
+            "med": 0,
+            "max": 2.6616,
+            "p(90)": 0
+        },
+        "vus_max": {
+            "value": 20,
+            "min": 20,
+            "max": 20
+        },
+        "http_req_connecting": {
+            "max": 3.0892,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.007882933333333333,
+            "min": 0,
+            "med": 0
+        },
+        "successful_transactions": {
+            "count": 1500,
+            "rate": 49.99772760328043
+        }
+    }
+}

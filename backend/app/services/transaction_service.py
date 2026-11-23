@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from app.api.v1.schemas.transaction import TransactionCreate
 from app.models.transaction import Transaction
+from app.models.outbox import OutboxMessage
 
 logger = logging.getLogger(__name__)
 
@@ -27,55 +28,106 @@ class TransactionService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
+    
     async def create_transaction(self, txn_data: TransactionCreate) -> Transaction:
-        """
-        Create a single transaction.
- 
-        Steps:
-        1. Idempotency check (duplicate transaction_id → 409)
-        2. Build model instance
-        3. Calculate basic fraud score
-        4. Persist to DB
-        5. Record processing time
-        """
         start = time.perf_counter()
 
-        # 1. Duplicate check
+        # 1. Check for an existing transaction
         if await self._is_duplicate(txn_data.transaction_id):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Transaction: '{txn_data.transaction_id}' already exists"
             )
 
-        # 2. Build transaction model instance
+        # 2. Create transaction with pending status
         transaction = Transaction(
             **txn_data.model_dump(exclude={"fraud_score"}),
             status="pending",
-            ) 
-        
-        # 3. Calculate basic fraud score
-        transaction.fraud_score = await self._calculate_fraud_score(
-            txn_data, transaction
         )
-        if transaction.fraud_score >= 0.7:
-            transaction.status = "flagged"
-            transaction.fraud_reason = await self._build_fraud_reason(txn_data, transaction)
 
-        # 4. Persist to DB
+        # 3. Add transaction and flush to obtain its database ID
         self.db.add(transaction)
-        await self.db.commit()
-        await self.db.refresh(transaction)
+        await self.db.flush()
 
-        # 5. Record processing time
-        transaction.processing_time_ms = (time.perf_counter() - start) * 1000
+        # 4. Create an Outbox message
+        outbox_message = OutboxMessage(
+            aggregate_id=transaction.id,
+            event_type="transaction.created",
+            payload={
+                "transaction_id": transaction.transaction_id,
+                "transaction_db_id": str(transaction.id),
+            },
+            status="pending",
+        )
+
+        self.db.add(outbox_message)
+
+        # 5. Measure API-side processing time
+        transaction.processing_time_ms = (
+            time.perf_counter() - start
+        ) * 1000
+
+        # 6. Commit transaction and Outbox message atomically
         await self.db.commit()
         await self.db.refresh(transaction)
 
         logger.info(
-            "Transaction ingested: id=%s amount=%s fraud_score=%.2f",
+            "Transaction queued: id=%s outbox_id=%s",
             transaction.transaction_id,
-            transaction.amount,
-            transaction.fraud_score or 0,
+            outbox_message.id,
+        )
+
+        return transaction
+
+
+    async def process_existing_transaction(
+        self,
+        transaction: Transaction,
+    ) -> Transaction:
+        """
+        Calculate fraud score and update an existing transaction.
+        Used by the asynchronous Transaction Worker.
+        """
+
+        # Prevent repeated processing
+        if transaction.processed_at is not None:
+            return transaction
+
+        # Convert ORM object into the existing Pydantic schema.
+        # This allows us to reuse the existing fraud scoring rules.
+        txn_data = TransactionCreate.model_validate(
+            transaction,
+            from_attributes=True,
+        )
+
+        # Calculate fraud score using existing business logic
+        fraud_score = await self._calculate_fraud_score(
+            txn_data,
+            transaction,
+        )
+
+        transaction.fraud_score = fraud_score
+
+        if fraud_score >= 0.7:
+            transaction.status = "flagged"
+            transaction.fraud_reason = await self._build_fraud_reason(
+                txn_data,
+                transaction,
+            )
+        else:
+            transaction.status = "approved"
+            transaction.fraud_reason = None
+
+        transaction.processed_at = datetime.now(timezone.utc)
+
+        await self.db.commit()
+        await self.db.refresh(transaction)
+
+        logger.info(
+            "Transaction processed: id=%s fraud_score=%.4f status=%s",
+            transaction.transaction_id,
+            fraud_score,
+            transaction.status,
         )
 
         return transaction
@@ -305,7 +357,11 @@ class TransactionService:
             score += 0.2
 
         # Rule 3: Customer transaction count
-        recent_count = await self.get_customer_transaction_count(txn_data.customer_id, minutes=60) 
+        recent_count = await self.get_customer_transaction_count(
+            txn_data.customer_id,
+            minutes=60,
+            exclude_transaction_id=txn_data.transaction_id,
+        ) 
         if recent_count >= 5:
             score += 0.3
 
@@ -324,7 +380,7 @@ class TransactionService:
     async def _build_fraud_reason(
         self,
         txn_data: TransactionCreate,
-        transaction: Transaction, 
+        transaction: Transaction,
     ) -> str:
         """Fraud reason"""
         reasons: list[str] = []
@@ -339,8 +395,11 @@ class TransactionService:
             reasons.append("international")
         
         recent_count = await self.get_customer_transaction_count(
-            txn_data.customer_id, minutes=60
-        ) 
+            txn_data.customer_id,
+            minutes=60,
+            exclude_transaction_id=txn_data.transaction_id,
+        )
+
         if recent_count >= 5:
             reasons.append("high_velocity")
 
@@ -354,22 +413,35 @@ class TransactionService:
         return ", ".join(reasons) if reasons else "rule_threshold"
 
 
+    
     async def get_customer_transaction_count(
-        self, 
-        customer_id: UUID, 
+        self,
+        customer_id: UUID,
         minutes: int = 60,
-        ) -> int:
-        """Count customer's transactions in the last N minutes"""
+        exclude_transaction_id: str | None = None,
+    ) -> int:
+        """Count customer's transactions in the last N minutes."""
+
         since = datetime.now(timezone.utc) - timedelta(minutes=minutes)
-        result = await self.db.execute(
-            select(func.count()).select_from(Transaction).where(
-                and_(
-                    Transaction.customer_id == customer_id,
-                    Transaction.transaction_time >= since,
-                )
+
+        conditions = [
+            Transaction.customer_id == customer_id,
+            Transaction.transaction_time >= since,
+        ]
+
+        if exclude_transaction_id is not None:
+            conditions.append(
+                Transaction.transaction_id != exclude_transaction_id
             )
-        )   
+
+        result = await self.db.execute(
+            select(func.count())
+            .select_from(Transaction)
+            .where(*conditions)
+        )
+
         return result.scalar() or 0
+
                     
 
     # Internal helpers

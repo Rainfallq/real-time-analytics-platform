@@ -1,0 +1,155 @@
+{
+    "metrics": {
+        "checks": {
+            "passes": 822,
+            "fails": 4980,
+            "value": 0.14167528438469493
+        },
+        "http_reqs": {
+            "rate": 96.6978897297198,
+            "count": 2901
+        },
+        "http_req_failed": {
+            "passes": 2490,
+            "fails": 411,
+            "value": 0.8583247156153051
+        },
+        "iterations": {
+            "count": 2901,
+            "rate": 96.6978897297198
+        },
+        "http_req_waiting": {
+            "avg": 71.96123967597379,
+            "min": 0.302,
+            "med": 1.0692,
+            "max": 1805.0082,
+            "p(90)": 293.4495,
+            "p(95)": 535.8122
+        },
+        "http_req_receiving": {
+            "p(90)": 1.0414,
+            "p(95)": 1.613,
+            "avg": 0.4735589796621857,
+            "min": 0,
+            "med": 0,
+            "max": 12.674
+        },
+        "dropped_iterations": {
+            "count": 99,
+            "rate": 3.299927984571617
+        },
+        "http_req_sending": {
+            "min": 0,
+            "med": 0,
+            "max": 1.0094,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.0023486728714236463
+        },
+        "transaction_success_rate": {
+            "fails": 2490,
+            "passes": 411,
+            "value": 0.14167528438469493
+        },
+        "http_req_connecting": {
+            "avg": 0.01963871078938297,
+            "min": 0,
+            "med": 0,
+            "max": 15.7344,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_tls_handshaking": {
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0
+        },
+        "vus": {
+            "min": 0,
+            "max": 50,
+            "value": 0
+        },
+        "http_req_blocked": {
+            "p(95)": 0,
+            "avg": 0.02210224060668735,
+            "min": 0,
+            "med": 0,
+            "max": 16.6082,
+            "p(90)": 0
+        },
+        "data_received": {
+            "count": 923839,
+            "rate": 30793.961306451092
+        },
+        "successful_transactions": {
+            "count": 411,
+            "rate": 13.699701026857925
+        },
+        "vus_max": {
+            "value": 50,
+            "min": 37,
+            "max": 50
+        },
+        "http_req_duration": {
+            "p(90)": 294.8872,
+            "p(95)": 538.0046,
+            "avg": 72.43714732850727,
+            "min": 0.3084,
+            "med": 1.5059,
+            "max": 1805.0082
+        },
+        "http_req_duration{expected_response:true}": {
+            "med": 453.9286,
+            "max": 1805.0082,
+            "p(90)": 887.9797,
+            "p(95)": 1042.05955,
+            "avg": 502.1825141119224,
+            "min": 49.1976
+        },
+        "app_processing_time_ms": {
+            "avg": 9.297846715293895,
+            "min": 3.6587000013241777,
+            "med": 7.414900001094793,
+            "max": 127.76350000058301,
+            "p(90)": 13.881299999411567,
+            "p(95)": 18.47674999953597
+        },
+        "data_sent": {
+            "count": 1707656,
+            "rate": 56920.62446890534
+        },
+        "iteration_duration": {
+            "max": 1806.0185,
+            "p(90)": 296.1996,
+            "p(95)": 538.0046,
+            "avg": 72.55661961392605,
+            "min": 0.3084,
+            "med": 1.5234
+        }
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "status is 202": {
+                "id": "34a6d451b2be8259be22b1a5c2a715cf",
+                "passes": 411,
+                "fails": 2490,
+                "name": "status is 202",
+                "path": "::status is 202"
+            },
+            "response contains transaction_id": {
+                "name": "response contains transaction_id",
+                "path": "::response contains transaction_id",
+                "id": "9aef29c285f0c55de2d4ac84c39cb00b",
+                "passes": 411,
+                "fails": 2490
+            }
+        }
+    }
+}

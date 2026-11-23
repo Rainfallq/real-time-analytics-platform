@@ -16,6 +16,8 @@ from app.db.base import Base
 from app.core.config import settings
 from app.models.user import User
 from app.models.event import Event
+from app.models.transaction import Transaction
+from app.models.outbox import OutboxMessage
 
 config = context.config
 

@@ -1,0 +1,151 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "status is 202": {
+                "path": "::status is 202",
+                "id": "34a6d451b2be8259be22b1a5c2a715cf",
+                "passes": 300,
+                "fails": 0,
+                "name": "status is 202"
+            },
+            "response contains transaction_id": {
+                "passes": 300,
+                "fails": 0,
+                "name": "response contains transaction_id",
+                "path": "::response contains transaction_id",
+                "id": "9aef29c285f0c55de2d4ac84c39cb00b"
+            }
+        }
+    },
+    "metrics": {
+        "data_sent": {
+            "count": 176365,
+            "rate": 5878.737000429686
+        },
+        "iteration_duration": {
+            "max": 159.9873,
+            "p(90)": 27.753040000000002,
+            "p(95)": 29.911390000000004,
+            "avg": 20.70326033333334,
+            "min": 9.4902,
+            "med": 18.34185
+        },
+        "http_req_waiting": {
+            "max": 153.0647,
+            "p(90)": 27.217850000000002,
+            "p(95)": 29.551345,
+            "avg": 19.891461000000007,
+            "min": 7.2058,
+            "med": 17.5733
+        },
+        "successful_transactions": {
+            "count": 300,
+            "rate": 9.999836136018518
+        },
+        "app_processing_time_ms": {
+            "p(90)": 7.290420000754239,
+            "p(95)": 7.9794499991294305,
+            "avg": 4.648508666662868,
+            "min": 1.6267999999399763,
+            "med": 4.141649999837682,
+            "max": 33.9719999992667
+        },
+        "http_req_blocked": {
+            "avg": 0.043699,
+            "min": 0,
+            "med": 0,
+            "max": 4.0056,
+            "p(90)": 0,
+            "p(95)": 0.3792000000000001
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0
+        },
+        "http_req_receiving": {
+            "avg": 0.5742246666666668,
+            "min": 0,
+            "med": 0.39765,
+            "max": 5.3274,
+            "p(90)": 1.2529000000000008,
+            "p(95)": 2.023305000000003
+        },
+        "vus": {
+            "min": 0,
+            "max": 1,
+            "value": 0
+        },
+        "http_req_duration": {
+            "min": 9.4902,
+            "med": 18.17335,
+            "max": 153.4629,
+            "p(90)": 27.753040000000002,
+            "p(95)": 29.812925000000003,
+            "avg": 20.482409000000008
+        },
+        "checks": {
+            "passes": 600,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_sending": {
+            "min": 0,
+            "med": 0,
+            "max": 1.6618,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.016723333333333333
+        },
+        "vus_max": {
+            "max": 20,
+            "value": 20,
+            "min": 20
+        },
+        "http_req_connecting": {
+            "max": 1.1595,
+            "p(90)": 0,
+            "p(95)": 0.3163200000000004,
+            "avg": 0.028844,
+            "min": 0,
+            "med": 0
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 300,
+            "value": 0
+        },
+        "data_received": {
+            "count": 236043,
+            "rate": 7867.97107018073
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(90)": 27.753040000000002,
+            "p(95)": 29.812925000000003,
+            "avg": 20.482409000000008,
+            "min": 9.4902,
+            "med": 18.17335,
+            "max": 153.4629
+        },
+        "iterations": {
+            "count": 300,
+            "rate": 9.999836136018518
+        },
+        "http_reqs": {
+            "count": 300,
+            "rate": 9.999836136018518
+        },
+        "transaction_success_rate": {
+            "passes": 300,
+            "fails": 0,
+            "value": 1
+        }
+    }
+}

@@ -1,0 +1,151 @@
+{
+    "metrics": {
+        "app_processing_time_ms": {
+            "avg": 6.286435821431063,
+            "min": 2.3674999974900857,
+            "med": 5.753000001277542,
+            "max": 19.91039999847999,
+            "p(90)": 9.848099998635007,
+            "p(95)": 11.460499998065643
+        },
+        "http_reqs": {
+            "count": 3001,
+            "rate": 99.80235143651767
+        },
+        "http_req_receiving": {
+            "min": 0,
+            "med": 1.3116,
+            "max": 10.0158,
+            "p(90)": 4.4168,
+            "p(95)": 5.4464,
+            "avg": 1.8213899366877684
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 69.99832395868033,
+            "min": 1.1202,
+            "med": 46.5914,
+            "max": 647.3558,
+            "p(90)": 143.605,
+            "p(95)": 231.4395
+        },
+        "http_req_waiting": {
+            "med": 44.0691,
+            "max": 642.3075,
+            "p(90)": 141.9918,
+            "p(95)": 230.7858,
+            "avg": 68.17577144285228,
+            "min": 1.1202
+        },
+        "iteration_duration": {
+            "avg": 70.35409923358868,
+            "min": 1.1202,
+            "med": 46.9415,
+            "max": 647.3558,
+            "p(90)": 143.6163,
+            "p(95)": 231.4395
+        },
+        "vus_max": {
+            "value": 50,
+            "min": 50,
+            "max": 50
+        },
+        "http_req_blocked": {
+            "min": 0,
+            "med": 0,
+            "max": 1.5931,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.00663332222592469
+        },
+        "successful_transactions": {
+            "count": 3001,
+            "rate": 99.80235143651767
+        },
+        "http_req_connecting": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.005505831389536821,
+            "min": 0,
+            "med": 0,
+            "max": 1.0831
+        },
+        "transaction_success_rate": {
+            "passes": 3001,
+            "fails": 0,
+            "value": 1
+        },
+        "vus": {
+            "value": 11,
+            "min": 1,
+            "max": 28
+        },
+        "http_req_duration": {
+            "p(95)": 231.4395,
+            "avg": 69.99832395868033,
+            "min": 1.1202,
+            "med": 46.5914,
+            "max": 647.3558,
+            "p(90)": 143.605
+        },
+        "http_req_sending": {
+            "p(95)": 0,
+            "avg": 0.0011625791402865712,
+            "min": 0,
+            "med": 0,
+            "max": 0.5404,
+            "p(90)": 0
+        },
+        "checks": {
+            "passes": 6002,
+            "fails": 0,
+            "value": 1
+        },
+        "data_sent": {
+            "count": 1766545,
+            "rate": 58748.865351024026
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 3001,
+            "value": 0
+        },
+        "data_received": {
+            "rate": 78549.40577892795,
+            "count": 2361936
+        },
+        "http_req_tls_handshaking": {
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0
+        },
+        "iterations": {
+            "count": 3001,
+            "rate": 99.80235143651767
+        }
+    },
+    "root_group": {
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "status is 202": {
+                "name": "status is 202",
+                "path": "::status is 202",
+                "id": "34a6d451b2be8259be22b1a5c2a715cf",
+                "passes": 3001,
+                "fails": 0
+            },
+            "response contains transaction_id": {
+                "id": "9aef29c285f0c55de2d4ac84c39cb00b",
+                "passes": 3001,
+                "fails": 0,
+                "name": "response contains transaction_id",
+                "path": "::response contains transaction_id"
+            }
+        },
+        "name": "",
+        "path": ""
+    }
+}
