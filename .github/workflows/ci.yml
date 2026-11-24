@@ -73,4 +73,4 @@ jobs:
           context: .
           file: infrastructure/docker/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/rtap-app:${{ github.sha }},ghcr.io/${{ github.repository_owner }}/rtap-app:latest
+          tags: ghcr.io/rainfallq/rtap-app:${{ github.sha }},ghcr.io/rainfallq/rtap-app:latest
