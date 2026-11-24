@@ -45,7 +45,7 @@ class TestIngest:
         assert response.status_code == 202
         data = response.json()
         assert data["transaction_id"] == payload["transaction_id"]
-        assert data["status"] in ("pending", "flagged")
+        assert data["status"] == "approved"
         assert "fraud_score" in data
         assert "id" in data
 
@@ -351,7 +351,7 @@ class TestTransactionService:
 
         assert txn.id is not None
         assert txn.transaction_id == data.transaction_id
-        assert txn.status in ("pending", "flagged")
+        assert txn.status == "approved"
         assert txn.fraud_score is not None
         assert txn.processing_time_ms is not None
 
