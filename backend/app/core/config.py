@@ -30,11 +30,14 @@ class Settings(BaseSettings):
     
     # DB
     DATABASE_URL: str = Field(
-        default="postgresql+asyncpg://rtap_user:rainfallontop1@localhost:5432/analytics",
+        default="postgresql+asyncpg://rtap_user:change_me@localhost:5432/analytics",
         description="Async Postgresql connection URL"
     )
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 0
+    # SQL echo is separate from DEBUG: echoing every statement to the console
+    # slows the service down and must stay off during load tests.
+    SQL_ECHO: bool = False
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -63,11 +66,28 @@ class Settings(BaseSettings):
     DEFAULT_PAGE_SIZE: int = 20
     MAX_PAGE_SIZE: int = 100
 
+    # Ingestion mode: "outbox" (variant B, scoring in the worker) or
+    # "sync" (variant A, scoring inside the request).
+    INGEST_MODE: str = "outbox"
+
+    # Worker and publisher resilience
+    WORKER_MAX_ATTEMPTS: int = 3
+    PUBLISH_MAX_ATTEMPTS: int = 3
+    RETRY_BASE_DELAY_S: float = 0.2
+    RETRY_MAX_DELAY_S: float = 5.0
+    BREAKER_FAILURE_THRESHOLD: int = 5
+    BREAKER_RESET_TIMEOUT_S: float = 15.0
+
+    # Prometheus metrics ports of the background processes
+    PUBLISHER_METRICS_PORT: int = 9101
+    WORKER_METRICS_PORT: int = 9102
+
     # Kafka
     KAFKA_BOOTSTRAP_SERVERS: str = "localhost:9092"
     KAFKA_TOPIC_RAW_DATA: str = "raw-data"
     KAFKA_TOPIC_PROCESSED_DATA: str = "processed-data"
     KAFKA_TOPIC_ALERTS: str = "alerts"
+    KAFKA_TOPIC_DLQ: str = "raw-data.dlq"
 
 
 

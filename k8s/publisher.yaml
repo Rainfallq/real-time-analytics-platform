@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtap-publisher
+  namespace: rtap
+  labels: {app: rtap-publisher}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: rtap-publisher}
+  template:
+    metadata:
+      labels: {app: rtap-publisher}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9101"
+        prometheus.io/path: "/metrics"
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext: {runAsNonRoot: true, runAsUser: 10001}
+      containers:
+        - name: publisher
+          image: rtap-app:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "workers.outbox_publisher"]
+          ports:
+            - {name: metrics, containerPort: 9101}
+          envFrom:
+            - configMapRef: {name: rtap-config}
+            - secretRef: {name: rtap-secret}
+          livenessProbe:
+            httpGet: {path: /metrics, port: metrics}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 384Mi}

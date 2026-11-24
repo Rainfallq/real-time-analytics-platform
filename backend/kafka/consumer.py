@@ -75,6 +75,19 @@ class KafkaConsumer:
 
         await self._consumer.commit()
 
+    async def lag(self) -> int:
+        """Number of messages in the assigned partitions not yet read."""
+        if self._consumer is None:
+            return 0
+        total = 0
+        for tp in self._consumer.assignment():
+            high = self._consumer.highwater(tp)
+            if high is None:
+                continue
+            position = await self._consumer.position(tp)
+            total += max(0, high - position)
+        return total
+
     async def stop(self) -> None:
         """Close the consumer connection."""
         if self._consumer is not None:

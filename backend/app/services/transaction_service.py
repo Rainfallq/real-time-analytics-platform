@@ -10,6 +10,8 @@ from decimal import Decimal
 from app.api.v1.schemas.transaction import TransactionCreate
 from app.models.transaction import Transaction
 from app.models.outbox import OutboxMessage
+from app.core.config import settings
+from app.core.metrics import TRANSACTIONS_INGESTED_TOTAL
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,75 @@ class TransactionService:
 
     
     async def create_transaction(self, txn_data: TransactionCreate) -> Transaction:
+        """Create a transaction using the configured ingestion mode.
+
+        outbox: variant B, the transaction and an outbox message are saved in
+                one database transaction, scoring is done later by the worker.
+        sync:   variant A, scoring is done inside the request.
+        """
+        if settings.INGEST_MODE == "sync":
+            return await self._create_transaction_sync(txn_data)
+        return await self._create_transaction_outbox(txn_data)
+
+    
+    async def _create_transaction_sync(self, txn_data: TransactionCreate) -> Transaction:
+        """Variant A (baseline): score and persist inside the request."""
+        start = time.perf_counter()
+
+        if await self._is_duplicate(txn_data.transaction_id):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Transaction: '{txn_data.transaction_id}' already exists"
+            )
+
+        transaction = Transaction(
+            **txn_data.model_dump(exclude={"fraud_score"}),
+            status="pending",
+        )
+
+        # Calculate fraud score synchronously inside the API request
+        transaction.fraud_score = await self._calculate_fraud_score(
+            txn_data, transaction
+        )
+
+        # Set the final transaction status
+        if transaction.fraud_score >= 0.7:
+            transaction.status = "flagged"
+            transaction.fraud_reason = await self._build_fraud_reason(
+                txn_data, transaction
+            )
+        else:
+            transaction.status = "approved"
+            transaction.fraud_reason = None
+
+        # Mark transaction as processed before committing
+        transaction.processed_at = datetime.now(timezone.utc)
+
+        self.db.add(transaction)
+        await self.db.commit()
+        await self.db.refresh(transaction)
+
+        transaction.processing_time_ms = (
+            time.perf_counter() - start
+        ) * 1000
+
+        await self.db.commit()
+        await self.db.refresh(transaction)
+
+        TRANSACTIONS_INGESTED_TOTAL.labels("sync").inc()
+
+        logger.info(
+            "Transaction processed synchronously: id=%s fraud_score=%.4f status=%s",
+            transaction.transaction_id,
+            transaction.fraud_score,
+            transaction.status,
+        )
+
+        return transaction
+
+
+    async def _create_transaction_outbox(self, txn_data: TransactionCreate) -> Transaction:
+        """Variant B: save transaction and outbox message atomically."""
         start = time.perf_counter()
 
         # 1. Check for an existing transaction
@@ -71,6 +142,7 @@ class TransactionService:
         await self.db.commit()
         await self.db.refresh(transaction)
 
+        TRANSACTIONS_INGESTED_TOTAL.labels("outbox").inc()
         logger.info(
             "Transaction queued: id=%s outbox_id=%s",
             transaction.transaction_id,

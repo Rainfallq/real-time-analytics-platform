@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Request
+from contextlib import asynccontextmanager
+
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -8,7 +10,12 @@ import logging
 
 from app.core.config import settings
 from app.api.router import api_router
-from app.db.session import engine
+from app.db.session import engine, get_db
+from app.core.metrics import DB_POOL_CHECKED_OUT, DB_POOL_SIZE
+from app.core.metrics_middleware import PrometheusMiddleware
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.base import Base
 
 
@@ -19,7 +26,28 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def _pool_checked_out() -> float:
+    try:
+        return float(engine.pool.checkedout())
+    except Exception:
+        return 0.0
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting Real-Time Analytics Platform")
+    logger.info("Environment: %s, debug: %s, ingest mode: %s",
+                settings.ENVIRONMENT, settings.DEBUG, settings.INGEST_MODE)
+    DB_POOL_SIZE.set(settings.DATABASE_POOL_SIZE)
+    DB_POOL_CHECKED_OUT.set_function(_pool_checked_out)
+    yield
+    logger.info("Shutting down Real-Time Analytics Platform")
+    await engine.dispose()
+    logger.info("Shutdown complete")
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="Real Time Analytics Platform",
     version=settings.APP_VERSION,
     description="High-Performance Real-Time Analytics Platform",
@@ -36,6 +64,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+# Prometheus request metrics
+app.add_middleware(PrometheusMiddleware, router=app)
 
 # Trusted host 
 if not settings.DEBUG:
@@ -64,20 +95,6 @@ async def global_exception_handler(request: Request, exc: Exception):
         }
     )
 
-@app.on_event("startup")
-async def startup_event():
-    logger.info("🚀 Starting Real-Time Analytics Platform...")
-    logger.info(f"Environment: {settings.ENVIRONMENT}")
-    logger.info(f"Debug mode: {settings.DEBUG}")
-    
-    logger.info("✅ Application started successfuly")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("🛑 Shutting down Real-Time Analytics Platform...")
-    await engine.dispose()
-    logger.info("✅ Shutdown complete")
-
 # Include api router
 app.include_router(api_router, prefix="/api")
 
@@ -100,25 +117,25 @@ async def health_check():
         "environment": settings.ENVIRONMENT
     }
 
-# # Readiness probe (for Kubernetes)
-# @app.get("/ready")
-# async def readiness_probe():
-#     """Readiness probe - checks if app is ready to serve traffic"""
-#     # Add checks for database, redis, etc.
-#     try:
-#         # Quick DB check
-#         async with engine.connect() as conn:
-#             await conn.execute("SELECT 1")
-#         return {"status": "ready"}
-#     except Exception as e:
-#         logger.error(f"Readiness check failed: {e}")
-#         return JSONResponse(
-#             status_code=503,
-#             content={"status": "not ready", "error": str(e)}
-#         )
+@app.get("/alive")
+async def liveness_probe():
+    """Liveness probe. It makes no external calls on purpose, so a database
+    outage does not make Kubernetes restart healthy pods."""
+    return {"status": "alive"}
 
-# # Liveness probe (for Kubernetes)
-# @app.get("/alive")
-# async def liveness_probe():
-#     """Liveness probe - checks if app is alive"""
-#     return {"status": "alive"}
+
+@app.get("/ready")
+async def readiness_probe(db: AsyncSession = Depends(get_db)):
+    """Readiness probe. The pod receives traffic only if the database answers."""
+    try:
+        await db.execute(text("SELECT 1"))
+        return {"status": "ready"}
+    except Exception as exc:
+        logger.error("Readiness check failed: %s", exc)
+        return JSONResponse(status_code=503, content={"status": "not ready"})
+
+
+@app.get("/metrics", include_in_schema=False)
+async def metrics():
+    """Prometheus metrics."""
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)

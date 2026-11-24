@@ -2,6 +2,12 @@
 Pytest configuration and shared fixtures.
 Test database: SQLite (in-memory).
 """
+import os
+
+# Existing tests check scoring inside the request, so they run in sync mode.
+# Outbox mode is tested separately in test_outbox_mode.py.
+os.environ.setdefault("INGEST_MODE", "sync")
+
 import pytest_asyncio
 from uuid import uuid4
 from datetime import datetime, timezone
@@ -212,3 +218,11 @@ async def existing_transaction(db_session: AsyncSession, test_user: User) -> Tra
     await db_session.commit()
     await db_session.refresh(txn)
     return txn
+
+def pytest_sessionfinish(session, exitstatus):
+    """Close the SQLite connection thread, otherwise the process never exits."""
+    import asyncio
+    try:
+        asyncio.run(test_engine.dispose())
+    except Exception:
+        pass

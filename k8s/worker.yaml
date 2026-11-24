@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtap-worker
+  namespace: rtap
+  labels: {app: rtap-worker}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: rtap-worker}
+  template:
+    metadata:
+      labels: {app: rtap-worker}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9102"
+        prometheus.io/path: "/metrics"
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext: {runAsNonRoot: true, runAsUser: 10001}
+      containers:
+        - name: worker
+          image: rtap-app:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "workers.transaction_worker"]
+          ports:
+            - {name: metrics, containerPort: 9102}
+          envFrom:
+            - configMapRef: {name: rtap-config}
+            - secretRef: {name: rtap-secret}
+          livenessProbe:
+            httpGet: {path: /metrics, port: metrics}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 384Mi}

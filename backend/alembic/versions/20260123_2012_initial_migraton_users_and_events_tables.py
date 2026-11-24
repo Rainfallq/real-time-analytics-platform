@@ -42,6 +42,27 @@ def upgrade() -> None:
     op.create_index(op.f('ix_events_event_type'), 'events', ['event_type'], unique=False)
     op.create_index(op.f('ix_events_id'), 'events', ['id'], unique=False)
     op.create_index(op.f('ix_events_source_id'), 'events', ['source_id'], unique=False)
+    op.create_table(
+        'users',
+        sa.Column('id', sa.Uuid(), nullable=False, comment='User id'),
+        sa.Column('username', sa.String(length=50), nullable=False, comment='Username'),
+        sa.Column('email', sa.String(length=255), nullable=False, comment='User email (login)'),
+        sa.Column('password_hash', sa.String(length=255), nullable=False, comment='Hashed password'),
+        sa.Column('full_name', sa.String(length=255), nullable=True, comment='User full name'),
+        sa.Column('role', sa.String(length=20), nullable=False, server_default=sa.text("'user'"), comment='User role for permissions'),
+        sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('true'), comment='Is user account active'),
+        sa.Column('is_verified', sa.Boolean(), nullable=False, server_default=sa.text('false'), comment='Is email verified'),
+        sa.Column('last_login_at', sa.DateTime(timezone=True), nullable=True, comment='Last login timestamp'),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False, comment='Record creation timestamp'),
+        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False, comment='Record last update timestamp'),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('email'),
+        sa.UniqueConstraint('username'),
+    )
+    op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
+    op.create_index(op.f('ix_users_username'), 'users', ['username'], unique=True)
+    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
+    op.create_index('ix_users_username_lower', 'users', [sa.text('lower(username)')], unique=True)
     op.alter_column('users', 'last_login_at',
                existing_type=postgresql.TIMESTAMP(timezone=True),
                server_default=sa.text('now()'),
@@ -66,4 +87,9 @@ def downgrade() -> None:
     op.drop_index('ix-events-severity', table_name='events', postgresql_where=sa.text('severity > 0.7'))
     op.drop_index('ix-events-payload-gin', table_name='events', postgresql_using='gin')
     op.drop_table('events')
+    op.drop_index('ix_users_username_lower', table_name='users')
+    op.drop_index(op.f('ix_users_email'), table_name='users')
+    op.drop_index(op.f('ix_users_username'), table_name='users')
+    op.drop_index(op.f('ix_users_id'), table_name='users')
+    op.drop_table('users')
     # ### end Alembic commands ###

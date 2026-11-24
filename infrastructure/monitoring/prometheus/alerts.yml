@@ -1,0 +1,92 @@
+groups:
+  - name: rtap-availability
+    rules:
+      - alert: ApiDown
+        expr: up{job="api"} == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "API is not reachable"
+          description: "Prometheus cannot scrape the API for 1 minute."
+
+      - alert: PublisherDown
+        expr: up{job="publisher"} == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "Outbox publisher is down"
+          description: "Events stay in the outbox until the publisher is back."
+
+      - alert: WorkerDown
+        expr: up{job="worker"} == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "Transaction worker is down"
+          description: "Transactions are accepted but not scored."
+
+  - name: rtap-api
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status_code=~"5.."}[5m]))
+            / sum(rate(http_requests_total[5m])) > 0.01
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: "More than 1 percent of responses are 5xx"
+
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le) (rate(http_request_duration_seconds_bucket{route="/api/v1/transactions/ingest"}[5m]))) > 0.1
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "p99 latency of ingestion is above 100 ms"
+
+      - alert: DbPoolSaturation
+        expr: db_pool_checked_out / db_pool_size > 0.9
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "More than 90 percent of database connections are in use"
+          description: "Requests start to wait for a free connection."
+
+  - name: rtap-pipeline
+    rules:
+      - alert: OutboxBacklog
+        expr: outbox_pending_events > 5000
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "Outbox backlog above 5000 events"
+          description: "The publisher is slower than ingestion or the broker is unavailable."
+
+      - alert: ConsumerLagHigh
+        expr: consumer_lag_messages > 10000
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "Worker lag above 10000 messages"
+
+      - alert: PipelineLatencyHigh
+        expr: |
+          histogram_quantile(0.95, sum by (le) (rate(pipeline_end_to_end_seconds_bucket[5m]))) > 30
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "p95 time from ingestion to scoring above 30 seconds"
+
+      - alert: DeadLetterMessages
+        expr: increase(dlq_messages_total[10m]) > 0
+        labels: {severity: warning}
+        annotations:
+          summary: "Messages were moved to the dead-letter topic"
+
+      - alert: CircuitBreakerOpen
+        expr: circuit_breaker_state == 2
+        for: 1m
+        labels: {severity: warning}
+        annotations:
+          summary: "Circuit breaker {{ $labels.name }} is open"
